@@ -11,9 +11,22 @@ export const LobeStepfunAI = LobeOpenAICompatibleFactory({
   baseURL: 'https://api.stepfun.com/v1',
   chatCompletion: {
     handlePayload: (payload) => {
+      const { enabledSearch, tools, ...rest } = payload;
+
+      const stepfunTools = enabledSearch ? [
+        ...(tools || []),
+        {
+          function: {
+            description: "use web_search to search information on the internet",
+          },
+          type: "web_search",
+        }
+      ] : tools;
+
       return {
-        ...payload,
-        stream: !payload.tools,
+        ...rest,
+        stream: !stepfunTools,
+        tools: stepfunTools,
       } as any;
     },
   },
@@ -33,7 +46,12 @@ export const LobeStepfunAI = LobeOpenAICompatibleFactory({
 
     const visionKeywords = [
       'step-1o-',
+      'step-r1-v-',
       'step-1v-',
+    ];
+
+    const reasoningKeywords = [
+      'step-r1-',
     ];
 
     const modelsPage = await client.models.list() as any;
@@ -53,7 +71,8 @@ export const LobeStepfunAI = LobeOpenAICompatibleFactory({
             || false,
           id: model.id,
           reasoning:
-            knownModel?.abilities?.reasoning
+            reasoningKeywords.some(keyword => model.id.toLowerCase().includes(keyword))
+            || knownModel?.abilities?.reasoning
             || false,
           vision:
             visionKeywords.some(keyword => model.id.toLowerCase().includes(keyword))

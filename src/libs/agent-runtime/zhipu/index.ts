@@ -1,6 +1,4 @@
-import OpenAI from 'openai';
-
-import { ChatStreamPayload, ModelProvider } from '../types';
+import { ModelProvider } from '../types';
 import { LobeOpenAICompatibleFactory } from '../utils/openaiCompatibleFactory';
 
 import type { ChatModelCard } from '@/types/llm';
@@ -14,9 +12,21 @@ export interface ZhipuModelCard {
 export const LobeZhipuAI = LobeOpenAICompatibleFactory({
   baseURL: 'https://open.bigmodel.cn/api/paas/v4',
   chatCompletion: {
-    handlePayload: ({ max_tokens, model, temperature, top_p, ...payload }: ChatStreamPayload) =>
-      ({
-        ...payload,
+    handlePayload: (payload) => {
+      const { enabledSearch, max_tokens, model, temperature, tools, top_p, ...rest } = payload;
+
+      const zhipuTools = enabledSearch ? [
+        ...(tools || []),
+        {
+          type: "web_search",
+          web_search: {
+            enable: true,
+          },
+        }
+      ] : tools;
+
+      return {
+        ...rest,
         max_tokens: 
           max_tokens === undefined ? undefined :
           (model.includes('glm-4v') && Math.min(max_tokens, 1024)) ||
@@ -24,6 +34,7 @@ export const LobeZhipuAI = LobeOpenAICompatibleFactory({
           max_tokens,
         model,
         stream: true,
+        tools: zhipuTools,
         ...(model === 'glm-4-alltools'
           ? {
               temperature:
@@ -36,12 +47,7 @@ export const LobeZhipuAI = LobeOpenAICompatibleFactory({
               temperature: temperature !== undefined ? temperature / 2 : undefined,
               top_p,
             }),
-      }) as OpenAI.ChatCompletionCreateParamsStreaming,
-  },
-  constructorOptions: {
-    defaultHeaders: {
-      'Bigmodel-Organization': 'lobehub',
-      'Bigmodel-project': 'lobechat',
+      } as any;
     },
   },
   debug: {
@@ -50,11 +56,24 @@ export const LobeZhipuAI = LobeOpenAICompatibleFactory({
   models: async ({ client }) => {
     const { LOBE_DEFAULT_MODEL_LIST } = await import('@/config/aiModels');
 
-    // ref: https://open.bigmodel.cn/console/modelcenter/square
-    client.baseURL = 'https://open.bigmodel.cn/api/fine-tuning/model_center/list?pageSize=100&pageNum=1';
+    const reasoningKeywords = [
+      'glm-zero',
+      'glm-z1',
+    ];
 
-    const modelsPage = await client.models.list() as any;
-    const modelList: ZhipuModelCard[] = modelsPage.body.rows;
+    // ref: https://open.bigmodel.cn/console/modelcenter/square
+    const url = 'https://open.bigmodel.cn/api/fine-tuning/model_center/list?pageSize=100&pageNum=1';
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${client.apiKey}`,
+        'Bigmodel-Organization': 'lobehub',
+        'Bigmodel-Project': 'lobechat',
+      },
+      method: 'GET',
+    });
+    const json = await response.json();
+
+    const modelList: ZhipuModelCard[] = json.rows;
 
     return modelList
       .map((model) => {
@@ -71,7 +90,7 @@ export const LobeZhipuAI = LobeOpenAICompatibleFactory({
             || false,
           id: model.modelCode,
           reasoning:
-            model.modelCode.toLowerCase().includes('glm-zero-preview')
+            reasoningKeywords.some(keyword => model.modelCode.toLowerCase().includes(keyword))
             || knownModel?.abilities?.reasoning
             || false,
           vision:

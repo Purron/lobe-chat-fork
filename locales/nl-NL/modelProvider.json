@@ -164,6 +164,7 @@
     },
     "download": {
       "desc": "Ollama is het model aan het downloaden, sluit deze pagina alstublieft niet af. Bij een herstart zal het downloaden op de onderbroken plaats verdergaan.",
+      "failed": "Het downloaden van het model is mislukt. Controleer uw netwerk of de Ollama-instellingen en probeer het opnieuw.",
       "remainingTime": "Overgebleven tijd",
       "speed": "Downloadsnelheid",
       "title": "Model {{model}} wordt gedownload"
@@ -321,6 +322,16 @@
     "deleteSuccess": "Verwijdering geslaagd",
     "tooltip": "Werk basisconfiguratie van provider bij",
     "updateSuccess": "Bijwerking geslaagd"
+  },
+  "updateCustomAiProvider": {
+    "title": "Bijwerken van de configuratie van de aangepaste AI-provider"
+  },
+  "vertexai": {
+    "apiKey": {
+      "desc": "Vul je Vertex AI-sleutels in",
+      "placeholder": "{ \"type\": \"service_account\", \"project_id\": \"xxx\", \"private_key_id\": ... }",
+      "title": "Vertex AI-sleutels"
+    }
   },
   "zeroone": {
     "title": "01.AI Nul Een Alles"

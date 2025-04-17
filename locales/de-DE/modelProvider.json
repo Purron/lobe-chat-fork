@@ -164,6 +164,7 @@
     },
     "download": {
       "desc": "Ollama lädt dieses Modell herunter. Bitte schließen Sie diese Seite nicht. Ein erneuter Download wird an der unterbrochenen Stelle fortgesetzt.",
+      "failed": "Der Download des Modells ist fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung oder die Ollama-Einstellungen und versuchen Sie es erneut.",
       "remainingTime": "Verbleibende Zeit",
       "speed": "Downloadgeschwindigkeit",
       "title": "Lade Modell {{model}} herunter"
@@ -321,6 +322,16 @@
     "deleteSuccess": "Löschung erfolgreich",
     "tooltip": "Aktualisieren Sie die grundlegenden Anbieterinformationen",
     "updateSuccess": "Aktualisierung erfolgreich"
+  },
+  "updateCustomAiProvider": {
+    "title": "Konfiguration des benutzerdefinierten KI-Anbieters aktualisieren"
+  },
+  "vertexai": {
+    "apiKey": {
+      "desc": "Geben Sie Ihre Vertex AI-Schlüssel ein",
+      "placeholder": "{ \"type\": \"service_account\", \"project_id\": \"xxx\", \"private_key_id\": ... }",
+      "title": "Vertex AI-Schlüssel"
+    }
   },
   "zeroone": {
     "title": "01.AI Alles und Nichts"
